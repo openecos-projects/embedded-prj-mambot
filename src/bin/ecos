@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ECOS command-line tool
+# Manages various operations for the ECOS embedded SDK
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SDK_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# Color output
+log() { echo -e "\033[1;32m[ECOS]\033[0m $*"; }
+warn() { echo -e "\033[1;33m[WARN]\033[0m $*"; }
+err() { echo -e "\033[1;31m[ERROR]\033[0m $*"; }
+
+# Show help information
+show_help() {
+    echo "ECOS Embedded SDK Command-Line Tool"
+    echo ""
+    echo "Usage: ecos <command> [options]"
+    echo ""
+    echo "Available commands:"
+    echo "  set_board <board_name>            Set the board configuration"
+    echo "  init_project <project_name>|list  Initialize a project or list available projects"
+    echo "  help                              Show this help message"
+    echo ""
+    echo "Board list:"
+    echo "  c1                                StarrySky C1 board"
+    echo "  c2                                StarrySky C2 board"
+    echo "  l3                                StarrySky L3 board"
+    echo ""
+    echo "Examples:"
+    echo "  ecos set_board c1                 Set the board to StarrySky C1"
+    echo "  ecos init_project hello           Initialize a new project named 'hello'"
+    echo "  ecos init_project list            List all available project templates"
+    echo ""
+}
+
+# Main function
+main() {
+    if [[ $# -eq 0 ]]; then
+        show_help
+        exit 0
+    fi
+    
+    local command="$1"
+    shift
+    
+    local subcommand_path="$SCRIPT_DIR/ecos-$command"
+
+    if [[ -f "$subcommand_path" ]]; then
+        exec "$subcommand_path" "$@"
+    fi
+
+    case "$command" in
+        "help"|"-h"|"--help")
+            show_help
+            ;;
+        *)
+            err "Unknown command: $command"
+            echo ""
+            show_help
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"
